@@ -99,9 +99,10 @@ param(
 $null = mkdir $Folder -ErrorAction SilentlyContinue
 Set-Location $Folder
 
-Start-Transcript -Path $transcript
-$logFile = "$PWD\initialize-$(get-date -Format yyyyMMdd-hhmm).log"
 $transcript = "$PWD\initialize-transcript-$(get-date -Format yyyyMMdd-hhmm).log"
+$logFile = "$PWD\initialize-$(get-date -Format yyyyMMdd-hhmm).log"
+
+Start-Transcript -Path $transcript
 
 LogIt "Starting initialization at $(get-date -Format yyyyMMdd-hhmm)"
 LogIt -indent "SkipVsts: $SkipVsts SkipSql: $SkipSql SkipTentacle: $SkipTentacle SkipIIS: $SkipIIS"
