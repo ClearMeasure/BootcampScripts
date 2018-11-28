@@ -1,0 +1,155 @@
+<#
+.SYNOPSIS
+run on the newly minted build box to setup the agent and install SQLExpress2017
+
+.DESCRIPTION
+To be called as part of the CustomScriptExtension of an Azure VM
+
+.PARAMETER AccountUrl
+URL to the account for the Agent
+
+.PARAMETER PAT
+PAT for the user  for the Agent
+
+.PARAMETER SQLServicePwd
+Password for the SQL Server Service
+
+.PARAMETER SaPwd
+Password for the sa SQL Server user
+
+.PARAMETER AdminUser
+User name to run the service as
+
+.PARAMETER AdminUserPwd
+Password for AdminUser
+
+.PARAMETER Roles
+Octopus Roles
+
+.PARAMETER AgentPool
+Pool for the agent, defaults to "AgentPool"
+
+.PARAMETER InstanceName
+SQL Instance name, defaults to sqlexpress2017
+
+.PARAMETER Folder
+Folder where to run this, defaults to c:\agent
+
+.PARAMETER Environments
+Octopus Environments
+
+#>
+param(
+[Parameter(Mandatory)]
+[string] $AccountUrl,
+[Parameter(Mandatory)]
+[string] $PAT,
+[Parameter(Mandatory)]
+[string] $SQLServicePwd,
+[Parameter(Mandatory)]
+[string] $SaPwd,
+[Parameter(Mandatory)]
+[string] $AdminUserName,
+[Parameter(Mandatory)]
+[string] $AdminUserPwd,
+[Parameter(Mandatory)]
+[string] $OctopusApiKey,
+[Parameter(Mandatory)]
+[string] $OctopusThumbprint,
+[Parameter(Mandatory)]
+[string[]] $Roles,
+[Parameter(Mandatory)]
+[string[]] $Environments,
+[Parameter(Mandatory)]
+[string] $PublicIp,
+[string] $AgentPool = "AgentPool",
+[string] $InstanceName = "sqlexpress2017",
+[string] $Folder = "c:\agent",
+[switch] $SkipVsts,
+[switch] $SkipSql,
+[switch] $SkipTentacle,
+[switch] $SkipIIS
+)
+
+Set-StrictMode -Version Latest
+
+function LogIt {
+param(
+[Parameter(Mandatory)]
+[string]$msg,
+[switch] $indent,
+[int] $lastExit = 0
+)
+
+    $indentStr = ""
+    if ( $indent )
+    {
+        $indentStr = "    "
+    }
+
+    Add-Content -Encoding Unicode $LogFile -Value "$(Get-Date) $indentStr$msg"
+    Write-Output $indentStr$msg
+
+    if ( $lastExit )
+    {
+        throw "Non-zero last exit of $lastexit"
+    }
+}
+
+$logFile = "$PWD\initialize-$(get-date -Format yyyyMMdd-hhmm).log"
+$transcript = "$PWD\initialize-transcript-$(get-date -Format yyyyMMdd-hhmm).log"
+
+Start-Transcript -Path $transcript
+
+LogIt "Creating folder $Folder"
+$null = mkdir $Folder -ErrorAction SilentlyContinue
+Set-Location $Folder
+
+if ( Test-Path .\BootcampScripts )
+{
+    LogIt ".\BootcampScripts exists, pulling"
+    Set-Location .\BootcampScripts
+    git pull 2>&1
+}
+else
+{
+    LogIt ".\BootcampScripts does not exist, cloning"
+    git clone https://github.com/ClearMeasure/BootcampScripts.git 2>&1
+    Set-Location .\BootcampScripts
+}
+
+$ErrorActionPreference = "Stop"
+
+try {
+
+    $userDomain = "$env:COMPUTERNAME\$AdminUserName"
+
+    logIt "Starting init: SkipVsts: $SkipVsts SkipSql: $SkipSql SkipTentacle: $SkipTentacle SkipIIS: $SkipIIS"
+
+    if ( !$SkipVsts )
+    {
+        .\Add-VstsAgent.ps1 -LogFile $logFile -AccountUrl $AccountUrl -PAT $PAT -AdminUser $AdminUserName -AdminUserPwd $AdminUserPwd -AgentPool $AgentPool
+    }
+
+    if ( !$SkipSql )
+    {
+        .\Install-SqlExpress.ps1 -LogFile $logFile -SaPwd $SaPwd -SvcPwd $SQLServicePwd -InstanceName $InstanceName -AdminUserDomain $userDomain
+    }
+
+    if ( !$SkipTentacle )
+    {
+        .\Install-Tentacle.ps1 -ApiKey $OctopusApiKey -Thumbprint $OctopusThumbprint -Roles $Roles -Environments $Environments -PublicIp $PublicIp
+    }
+
+    if ( !$SkipIIS )
+    {
+        .\Enable-IISFeature.ps1
+    }
+
+    .\Install-Chrome.ps1
+
+}
+finally {
+    Stop-Transcript
+}
+
