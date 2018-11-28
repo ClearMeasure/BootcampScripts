@@ -96,14 +96,18 @@ param(
     }
 }
 
-$logFile = "$PWD\initialize-$(get-date -Format yyyyMMdd-hhmm).log"
-$transcript = "$PWD\initialize-transcript-$(get-date -Format yyyyMMdd-hhmm).log"
 
 Start-Transcript -Path $transcript
+
+LogIt "Starting init: SkipVsts: $SkipVsts SkipSql: $SkipSql SkipTentacle: $SkipTentacle SkipIIS: $SkipIIS"
+LogIt "Running from $PSScriptRoot"
 
 LogIt "Creating folder $Folder"
 $null = mkdir $Folder -ErrorAction SilentlyContinue
 Set-Location $Folder
+
+$logFile = "$PWD\initialize-$(get-date -Format yyyyMMdd-hhmm).log"
+$transcript = "$PWD\initialize-transcript-$(get-date -Format yyyyMMdd-hhmm).log"
 
 if ( Test-Path .\BootcampScripts )
 {
@@ -120,8 +124,6 @@ $ErrorActionPreference = "Stop"
 try {
 
     $userDomain = "$env:COMPUTERNAME\$AdminUserName"
-
-    logIt "Starting init: SkipVsts: $SkipVsts SkipSql: $SkipSql SkipTentacle: $SkipTentacle SkipIIS: $SkipIIS"
 
     if ( !$SkipVsts )
     {
