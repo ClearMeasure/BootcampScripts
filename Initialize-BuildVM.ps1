@@ -96,26 +96,25 @@ param(
     }
 }
 
-
-Start-Transcript -Path $transcript
-
-LogIt "Starting init: SkipVsts: $SkipVsts SkipSql: $SkipSql SkipTentacle: $SkipTentacle SkipIIS: $SkipIIS"
-LogIt "Running from $PSScriptRoot"
-
-LogIt "Creating folder $Folder"
 $null = mkdir $Folder -ErrorAction SilentlyContinue
 Set-Location $Folder
 
+Start-Transcript -Path $transcript
 $logFile = "$PWD\initialize-$(get-date -Format yyyyMMdd-hhmm).log"
 $transcript = "$PWD\initialize-transcript-$(get-date -Format yyyyMMdd-hhmm).log"
 
+LogIt "Starting initialization at $(get-date -Format yyyyMMdd-hhmm)"
+LogIt -indent "SkipVsts: $SkipVsts SkipSql: $SkipSql SkipTentacle: $SkipTentacle SkipIIS: $SkipIIS"
+LogIt -indent "Running from $PSScriptRoot"
+LogIt -indent "Created folder $Folder"
+
 if ( Test-Path .\BootcampScripts )
 {
-    LogIt ".\BootcampScripts exists, removing it"
+    LogIt -indent ".\BootcampScripts exists, removing it"
     Remove-Item .\BootcampScripts -Recurse -Force -ErrorAction Ignore
 }
 
-LogIt "Cloning BootcampScripts"
+LogIt -indent "Cloning BootcampScripts"
 git clone https://github.com/ClearMeasure/BootcampScripts.git 2>&1
 Set-Location .\BootcampScripts
 
