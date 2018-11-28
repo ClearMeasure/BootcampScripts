@@ -32,7 +32,11 @@ param(
 [string] $AdminUser,
 [Parameter(Mandatory)]
 [string] $AdminUserPwd,
-[string] $AgentPool = "AgentPool"
+[Parameter(Mandatory)]
+[string] $AgentPool,
+[Parameter(Mandatory)]
+[ValidateScript({Test-Path $_ -PathType Container})]
+[string] $DownloadFolder
 )
 
 Set-StrictMode -Version Latest
@@ -48,7 +52,7 @@ Logit -indent "PAT $($PAT[0]+"*"*$PAT.Length)"
 Logit -indent "AdminUserPwd $($AdminUserPwd[0]+"*"*$AdminUserPwd.Length)"
 Logit -indent "Folder is $Folder"
 
-$fname = (Get-Item (Join-Path $PSScriptRoot "vsts-agent*.zip")).FullName
+$fname = (Get-Item (Join-Path $DownloadFolder "vsts-agent*.zip")).FullName
 Logit -indent "fname is $fname"
 
 Expand-Archive -Path $fname -DestinationPath $Folder -Force

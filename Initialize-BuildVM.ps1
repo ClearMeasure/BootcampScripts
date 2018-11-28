@@ -107,16 +107,13 @@ Set-Location $Folder
 
 if ( Test-Path .\BootcampScripts )
 {
-    LogIt ".\BootcampScripts exists, pulling"
-    Set-Location .\BootcampScripts
-    git pull 2>&1
+    LogIt ".\BootcampScripts exists, removing it"
+    Remove-Item .\BootcampScripts -Recurse -Force -ErrorAction Ignore
 }
-else
-{
-    LogIt ".\BootcampScripts does not exist, cloning"
-    git clone https://github.com/ClearMeasure/BootcampScripts.git 2>&1
-    Set-Location .\BootcampScripts
-}
+
+LogIt "Cloning BootcampScripts"
+git clone https://github.com/ClearMeasure/BootcampScripts.git 2>&1
+Set-Location .\BootcampScripts
 
 $ErrorActionPreference = "Stop"
 
@@ -128,7 +125,7 @@ try {
 
     if ( !$SkipVsts )
     {
-        .\Add-VstsAgent.ps1 -LogFile $logFile -AccountUrl $AccountUrl -PAT $PAT -AdminUser $AdminUserName -AdminUserPwd $AdminUserPwd -AgentPool $AgentPool
+        .\Add-VstsAgent.ps1 -LogFile $logFile -AccountUrl $AccountUrl -PAT $PAT -AdminUser $AdminUserName -AdminUserPwd $AdminUserPwd -AgentPool $AgentPool -DownloadFolder $PSScriptRoot
     }
 
     if ( !$SkipSql )
