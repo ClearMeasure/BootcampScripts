@@ -61,7 +61,9 @@ param(
 [Parameter(Mandatory)]
 [string[]] $Environments,
 [Parameter(Mandatory)]
-[string] $PublicIp,
+[string] $PublicDnsName,
+[Parameter(Mandatory)]
+[string] $OctopusDisplayName,
 [string] $AgentPool = "AgentPool",
 [string] $InstanceName = "sqlexpress2017",
 [string] $Folder = "c:\agent",
@@ -133,9 +135,7 @@ if ( Test-Path .\BootcampScripts )
     Remove-Item .\BootcampScripts -Recurse -Force
 }
 
-
 cloneIt
-
 
 $ErrorActionPreference = "Stop"
 
@@ -155,7 +155,7 @@ try {
 
     if ( !$SkipTentacle )
     {
-        .\BootcampScripts\Install-Tentacle.ps1 -ApiKey $OctopusApiKey -Thumbprint $OctopusThumbprint -Roles $Roles -Environments $Environments -PublicIp $PublicIp
+        .\BootcampScripts\Install-Tentacle.ps1 -ApiKey $OctopusApiKey -Thumbprint $OctopusThumbprint -Roles $Roles -Environments $Environments -PublicDnsName $PublicDnsName -DisplayName $OctopusDisplayName
     }
 
     if ( !$SkipIIS )
