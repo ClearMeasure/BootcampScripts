@@ -165,6 +165,8 @@ try {
 
     .\BootcampScripts\Install-Chrome.ps1
 
+    .\BootcampScripts\Set-HostValue.ps1
+
 }
 finally {
     try {
