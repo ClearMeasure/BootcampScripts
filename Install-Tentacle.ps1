@@ -25,7 +25,9 @@ param(
 [Parameter(Mandatory)]
 [string[]] $Environments,
 [Parameter(Mandatory)]
-[string] $PublicIp,
+[string] $PublicDnsName,
+[Parameter(Mandatory)]
+[string] $DisplayName,
 [string] $TentacleVersion = "3.23.2-x64",
 [string] $OctopusUrl = "https://clearmeasure.octopus.com"
 )
@@ -50,7 +52,8 @@ Logit -indent "OctopusUrl is $OctopusUrl"
 Logit -indent "TentacleVersion is $TentacleVersion"
 Logit -indent "Role is $Roles"
 Logit -indent "Environment is $Environments"
-Logit -indent "Public IP is $publicIp"
+Logit -indent "Public DNS Name is $PublicDnsName"
+Logit -indent "Display Name is $DisplayName"
 
 
 $fname = "Octopus.Tentacle.$TentacleVersion.msi"
@@ -78,7 +81,7 @@ try
     netsh.exe advfirewall firewall add rule "name=Octopus Deploy Tentacle" dir=in action=allow protocol=TCP localport=10933 | Out-null
     Logit -indent "netsh exited with $LASTEXITCODE" -lastexit $LASTEXITCODE
 
-    $cmd = ".\Tentacle.exe register-with --instance 'Tentacle' --server $OctopusUrl --apiKey=$ApiKey --role $($Roles -join ' --role ') --environment $($Environments -join ' --environment ') --comms-style TentaclePassive --console --publichostname $publicIp -force | Out-null"
+    $cmd = ".\Tentacle.exe register-with --instance 'Tentacle' --name '$DisplayName' --server $OctopusUrl --apiKey=$ApiKey --role $($Roles -join ' --role ') --environment $($Environments -join ' --environment ') --comms-style TentaclePassive --console --publichostname $PublicDnsName -force | Out-null"
     Invoke-Expression $cmd
     Logit -indent "register with exited with $LASTEXITCODE" -lastexit $LASTEXITCODE
 
