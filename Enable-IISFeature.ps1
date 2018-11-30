@@ -32,6 +32,10 @@ $features = "IIS-WebServerRole",
 "IIS-IIS6ManagementCompatibility",
 "IIS-Metabase"
 
+Logit "Disabling Default Web Site" # since our app uses port 80
+Import-Module WebAdministration
+Stop-Website 'Default Web Site'
+
 Logit "Enabling IIS Features"
 $i = 0
 $RestartNeeded = $false
