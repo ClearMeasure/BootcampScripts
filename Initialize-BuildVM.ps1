@@ -64,6 +64,8 @@ param(
 [string] $PublicDnsName,
 [Parameter(Mandatory)]
 [string] $OctopusDisplayName,
+[Parameter(Mandatory)]
+[string] $TimeZoneId,
 [string] $AgentPool = "AgentPool",
 [string] $InstanceName = "sqlexpress2017",
 [string] $Folder = "c:\agent",
@@ -166,6 +168,9 @@ try {
     .\BootcampScripts\Install-Chrome.ps1
 
     .\BootcampScripts\Set-HostValue.ps1
+
+    LogIt "Setting TimeZone to $TimeZoneId"
+    Set-TimeZone -Id $TimeZoneId
 
 }
 finally {
