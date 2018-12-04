@@ -47,4 +47,5 @@ foreach ( $feature in $features )
 Logit "Disabling Default Web Site" # since our app uses port 80
 Import-Module WebAdministration
 Stop-Website 'Default Web Site'
+Set-ItemProperty "IIS:\Sites\Default Web Site" serverAutoStart False
 
